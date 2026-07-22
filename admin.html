@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Shivaay Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-box">
+            <div class="login-header">
+                <i class="ph ph-shield-check"></i>
+                <h2>Admin Access</h2>
+                <p>Owner Login Only</p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Admin Email</label>
+                    <input type="email" id="admin-email" placeholder="admin@shivaaylibrary.com" required style="width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; margin-bottom: 1rem; outline: none;">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="admin-passcode" placeholder="Enter secure password" required>
+                        <button type="button" id="toggle-password" class="password-toggle-btn" aria-label="Toggle password visibility">
+                            <i class="ph ph-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Secure Login</button>
+                <p id="login-error" class="error-msg" style="display: none;"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" class="dashboard-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="ph ph-books"></i>
+                <h2>Shivaay Admin</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active" id="nav-students"><a href="#"><i class="ph ph-users"></i> Students & Seats</a></li>
+                <li id="nav-inquiries"><a href="#"><i class="ph ph-envelope"></i> Inquiries</a></li>
+                <li><a href="index.html"><i class="ph ph-globe"></i> View Website</a></li>
+                <li><a href="#" id="logout-btn"><i class="ph ph-sign-out"></i> Logout</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h1 id="page-title">Seat Management</h1>
+                    <p id="page-desc">Manage student details and seat reservations</p>
+                </div>
+                <div class="topbar-actions" id="students-actions">
+                    <div class="search-filter">
+                        <div class="search-box">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <input type="text" id="search-input" placeholder="Search name or seat...">
+                        </div>
+                        <select id="filter-status" class="filter-select">
+                            <option value="All">All Seats & Members</option>
+                            <option value="Active">Active Members</option>
+                            <option value="Expiring">Expiring Soon</option>
+                            <option value="Expired">Overdue / Expired</option>
+                            <option value="Reserved">Reserved Seats</option>
+                            <option value="Available">Available Seats</option>
+                            <option value="Paid">Paid Students</option>
+                            <option value="Partial">Partial Payment</option>
+                            <option value="Unpaid">Unpaid Students</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="add-student-btn"><i class="ph ph-plus"></i> Assign New Seat</button>
+                </div>
+            </header>
+
+            <div id="expiry-alert-banner" class="alert-banner" style="display: none;">
+                <div class="alert-content">
+                    <i class="ph ph-warning-circle"></i>
+                    <div>
+                        <strong>Membership Alerts:</strong> <span id="alert-text">You have students whose memberships need attention.</span>
+                    </div>
+                </div>
+                <button class="close-alert" id="close-alert-btn"><i class="ph ph-x"></i></button>
+            </div>
+
+            <div id="students-view">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon reserved"><i class="ph ph-users"></i></div>
+                        <div class="stat-info">
+                            <h3>Active Members</h3>
+                            <p id="active-count">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pending"><i class="ph ph-clock-countdown"></i></div>
+                        <div class="stat-info">
+                            <h3>Expiring Soon</h3>
+                            <p id="expiring-count">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon expired"><i class="ph ph-warning-octagon"></i></div>
+                        <div class="stat-info">
+                            <h3>Expired</h3>
+                            <p id="expired-count">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="ph ph-armchair"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Seats</h3>
+                            <p>75</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Seat No.</th>
+                                <th>Student Name</th>
+                                <th>Admission Date</th>
+                                <th>Months Paid</th>
+                                <th>Monthly Fee</th>
+                                <th>Total Fees</th>
+                                <th>Amount Paid</th>
+                                <th>Remaining Amount</th>
+                                <th>Expiry Date</th>
+                                <th>Payment Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-table-body">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Inquiries View -->
+            <div id="inquiries-view" style="display: none;">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Name</th>
+                                <th>Contact Number</th>
+                                <th>Email</th>
+                                <th>Exam Prep</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inquiries-table-body">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="student-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Assign Seat</h3>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="student-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label>Seat Number (1-75)</label>
+                    <input type="number" id="seat-number" min="1" max="75" required>
+                </div>
+                <div class="form-group">
+                    <label>Student Name</label>
+                    <input type="text" id="student-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="tel" id="student-phone" required>
+                </div>
+                <div class="form-group">
+                    <label>Admission Date</label>
+                    <input type="date" id="admission-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Monthly Fee Amount</label>
+                    <input type="number" id="monthly-fee" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Number of Months Paid</label>
+                    <input type="number" id="months-paid" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Total Fees</label>
+                    <input type="number" id="total-fees" readonly style="background: rgba(255, 255, 255, 0.01); color: var(--text-muted);">
+                </div>
+                <div class="form-group">
+                    <label>Amount Paid</label>
+                    <input type="number" id="amount-paid" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Remaining Amount</label>
+                    <input type="number" id="remaining-amount" readonly style="background: rgba(255, 255, 255, 0.01); color: var(--text-muted);">
+                </div>
+                <div class="form-group">
+                    <label>Seat Status</label>
+                    <select id="seat-status">
+                        <option value="Reserved">Reserved</option>
+                        <option value="Available">Available</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Payment Status</label>
+                    <input type="text" id="payment-status" readonly style="background: rgba(255, 255, 255, 0.01); color: var(--text-muted);">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Save Details</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

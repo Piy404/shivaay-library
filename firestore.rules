@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper to check if the request is authenticated and the user is the administrator
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'admin@shivaay.com' || 
+        request.auth.token.email == 'admin@shivaaylibrary.com'
+      );
+    }
+
+    // Students collection: Only admin can access or modify student data
+    match /students/{studentId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Inquiries collection: Anyone can submit a contact inquiry, but only the admin can read or delete them
+    match /inquiries/{inquiryId} {
+      allow create: if true;
+      allow read, delete, update: if isAdmin();
+    }
+  }
+}

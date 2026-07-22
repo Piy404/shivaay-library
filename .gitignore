@@ -1,0 +1,16 @@
+# Ignore dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment files
+.env
+server/.env
+client/.env
+
+# Build folders
+dist/
+build/
+
+# Cache
+.cache/

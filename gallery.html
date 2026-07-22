@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery | Shivaay Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar dark-nav">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i class="ph-fill ph-books"></i>
+                Shivaay Library
+            </a>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu"><i class="ph ph-list"></i></button>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="facilities.html">Facilities</a></li>
+                <li><a href="membership.html">Membership</a></li>
+                <li><a href="gallery.html" class="active">Gallery</a></li>
+            </ul>
+            <div class="nav-cta"><a href="contact.html" class="btn btn-primary">Book Your Seat</a></div>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <div class="container">
+            <h1 class="page-title">Our Environment</h1>
+            <p class="page-subtitle">Take a visual tour of the premium, distraction-free spaces engineered specifically for serious learners.</p>
+        </div>
+    </header>
+
+    <section class="section gallery">
+        <div class="container reveal">
+            <div class="masonry-gallery">
+                <div class="gallery-item"><img src="gallery-1.jpg" alt="Student immersed in studies at table"></div>
+                <div class="gallery-item"><img src="gallery-2.jpg" alt="Focused students studying in premium hall"></div>
+                <div class="gallery-item"><img src="gallery-3.jpg" alt="Student writing notes in silent zone"></div>
+                <div class="gallery-item"><img src="gallery-4.jpg" alt="Student utilizing ergonomic seating in library"></div>
+            </div>
+            
+            <div class="text-center mt-l">
+                <a href="contact.html" class="btn btn-primary btn-large">Experience It Personally</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="index.html" class="logo footer-logo">
+                    <i class="ph-fill ph-books"></i>
+                    Shivaay Library
+                </a>
+                <p>Your dream deserves the right environment.</p>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <p>&copy; 2026 Shivaay Library. All rights reserved.</p>
+        </div>
+    </footer>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
