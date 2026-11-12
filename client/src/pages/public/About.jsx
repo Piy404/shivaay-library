@@ -1,4 +1,4 @@
-import { MapPin, Clock, Users, ShieldCheck } from 'lucide-react';
+import { Clock, Users, ShieldCheck } from 'lucide-react';
 
 export default function About() {
   return (

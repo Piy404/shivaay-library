@@ -8,26 +8,28 @@ export default function StudentManagement() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStudents();
+    let active = true;
+    (async () => {
+      try {
+        const { data } = await api.get('/admin/students');
+        if (active) setStudents(data);
+      } catch (error) {
+        console.error('Failed to fetch students', error);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
-
-  const fetchStudents = async () => {
-    try {
-      const { data } = await api.get('/admin/students');
-      setStudents(data);
-    } catch (error) {
-      console.error('Failed to fetch students', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to remove this student?')) {
       try {
         await api.delete(`/students/${id}`);
         setStudents(students.filter(s => s._id !== id));
-      } catch (error) {
+      } catch {
         alert('Failed to delete student');
       }
     }

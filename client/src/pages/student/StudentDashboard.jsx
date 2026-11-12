@@ -1,4 +1,4 @@
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { User, CreditCard, Calendar, Clock, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -32,15 +32,23 @@ export default function StudentDashboard() {
                 <p className="text-slate-900">{user?.phone || 'Not provided'}</p>
               </div>
               <div>
+                <p className="text-sm font-medium text-slate-500 mb-1">Admission Code</p>
+                <p className="text-slate-900 font-mono">{user?.studentProfile?.admissionCode || 'N/A'}</p>
+              </div>
+              <div>
                 <p className="text-sm font-medium text-slate-500 mb-1">Member Since</p>
-                <p className="text-slate-900">{user?.joinDate ? new Date(user.joinDate).toLocaleDateString() : 'N/A'}</p>
+                <p className="text-slate-900">
+                  {user?.studentProfile?.joinDate
+                    ? new Date(user.studentProfile.joinDate).toLocaleDateString()
+                    : 'N/A'}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500 mb-1">Status</p>
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                  user?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  user?.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}>
-                  {user?.status === 'active' ? 'Active' : 'Inactive'}
+                  {user?.status === 'ACTIVE' ? 'Active' : user?.status || 'Inactive'}
                 </span>
               </div>
             </div>

@@ -3,14 +3,23 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
-# Environment files
+# Environment files (never commit secrets)
 .env
+.env.local
+.env.*.local
 server/.env
+server/.env.local
 client/.env
+client/.env.local
 
 # Build folders
 dist/
+client/dist/
 build/
+
+# Logs & OS files
+*.log
+.DS_Store
 
 # Cache
 .cache/
