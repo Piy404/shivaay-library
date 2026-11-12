@@ -1,0 +1,429 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STUDENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum PasswordAlgorithm {
+  ARGON2ID
+  BCRYPT_LEGACY
+}
+
+enum SeatStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+enum BookingStatus {
+  RESERVED
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  COMPLETED
+}
+
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  CREATED
+  PENDING
+  CAPTURED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  RAZORPAY
+  CASH
+  UPI
+  CARD
+  BANK_TRANSFER
+  LEGACY_MANUAL
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  EMAIL
+  IN_APP
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  SKIPPED_NO_CONSENT
+}
+
+enum FeedbackStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
+
+model LibrarySettings {
+  id                     Int      @id @default(1)
+  libraryName            String   @default("Shivaay Library")
+  totalSeats             Int      @default(75) // Provisional legacy default; configurable by admin
+  openingTime            String   @default("07:00") // Provisional legacy default (7:00 AM)
+  closingTime            String   @default("22:00") // Provisional legacy default (10:00 PM)
+  openDays               String   @default("Mon-Sun (All 7 Days)")
+  reservationHoldMinutes Int      @default(30)
+  expiryReminderDays     Int      @default(3)
+  address                String   @default("Plot No. 1, Sterling Globe, Hanuman Nagar, Jatkhedi, Bhopal, MP 462047")
+  supportPhone           String   @default("+91 9993165583")
+  updatedAt              DateTime @updatedAt
+}
+
+model User {
+  id                  String            @id @default(uuid())
+  email               String            @unique
+  phone               String?           @unique
+  name                String
+  passwordHash        String
+  passwordAlgo        PasswordAlgorithm @default(ARGON2ID)
+  role                UserRole          @default(STUDENT)
+  status              AccountStatus     @default(ACTIVE)
+  mustChangePassword  Boolean           @default(false)
+  failedLoginAttempts Int               @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  legacySource        String?
+  legacySourceId      String?           @unique
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  studentProfile         StudentProfile?
+  adminProfile           AdminProfile?
+  sessions               Session[]
+  passwordResetTokens    PasswordResetToken[]
+  auditLogsAsActor       AuditLog[]              @relation("AuditActor")
+  memberships            Membership[]
+  bookings               Booking[]
+  payments               Payment[]
+  attendances            Attendance[]
+  feedbacks              Feedback[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
+
+  @@index([role, status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model StudentProfile {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  admissionCode       String    @unique
+  targetExam          String?
+  address             String?
+  emergencyContact    String?
+  qrSecretToken       String    @unique
+  qrIssuedAt          DateTime  @default(now())
+  joinDate            DateTime  @default(now())
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([admissionCode])
+  @@map("student_profiles")
+}
+
+model AdminProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  designation      String   @default("Library Administrator")
+  totpEnabled      Boolean  @default(false)
+  totpSecretEnc    String?
+  totpBackupHashes Json?
+  totpVerifiedAt   DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admin_profiles")
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String
+  refreshTokenHash String    @unique
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  replacedById     String?
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model MembershipPlan {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  name         String
+  description  String?
+  durationDays Int
+  priceInr     Int
+  features     Json
+  isPopular    Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships Membership[]
+
+  @@index([isActive, sortOrder])
+  @@map("membership_plans")
+}
+
+model Membership {
+  id          String           @id @default(uuid())
+  userId      String
+  planId      String
+  startDate   DateTime
+  endDate     DateTime
+  status      MembershipStatus @default(PENDING)
+  autoRenew   Boolean          @default(false)
+  notes       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan     MembershipPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+  bookings Booking[]
+  payments Payment[]
+
+  @@index([userId, status])
+  @@index([endDate, status])
+  @@map("memberships")
+}
+
+model Seat {
+  id          String     @id @default(uuid())
+  seatNumber  Int        @unique
+  label       String     @unique
+  zone        String     @default("Main Hall")
+  hasPower    Boolean    @default(true)
+  isErgonomic Boolean    @default(true)
+  status      SeatStatus @default(AVAILABLE)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  bookings Booking[]
+
+  @@index([status, isActive])
+  @@index([zone])
+  @@map("seats")
+}
+
+model Booking {
+  id           String        @id @default(uuid())
+  userId       String
+  seatId       String
+  membershipId String?
+  status       BookingStatus @default(RESERVED)
+  startAt      DateTime      @default(now())
+  expiresAt    DateTime?
+  releasedAt   DateTime?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seat       Seat        @relation(fields: [seatId], references: [id], onDelete: Restrict)
+  membership Membership? @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+
+  @@index([seatId, status])
+  @@index([userId, status])
+  @@index([status, expiresAt])
+  @@map("bookings")
+}
+
+model Payment {
+  id                  String        @id @default(uuid())
+  userId              String
+  membershipId        String?
+  receiptNumber       String?       @unique
+  billingPeriod       String
+  amountInr           Int
+  currency            String        @default("INR")
+  status              PaymentStatus @default(CREATED)
+  method              PaymentMethod @default(RAZORPAY)
+  razorpayOrderId     String?       @unique
+  razorpayPaymentId   String?       @unique
+  razorpaySignature   String?
+  idempotencyKey      String?       @unique
+  failureReason       String?
+  paidAt              DateTime?
+  metadata            Json?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membership Membership? @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([paidAt])
+  @@map("payments")
+}
+
+model Attendance {
+  id           String    @id @default(uuid())
+  userId       String
+  checkInAt    DateTime  @default(now())
+  checkOutAt   DateTime?
+  attendanceDate DateTime @db.Date
+  verifiedById String?
+  scanMethod   String    @default("QR")
+  notes        String?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, attendanceDate])
+  @@index([attendanceDate])
+  @@index([userId, checkInAt])
+  @@map("attendances")
+}
+
+model Feedback {
+  id            String         @id @default(uuid())
+  userId        String
+  rating        Int
+  comment       String
+  examCategory  String?
+  status        FeedbackStatus @default(PENDING)
+  moderatedById String?
+  moderatedAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([userId])
+  @@map("feedbacks")
+}
+
+model NotificationPreference {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  whatsappOptIn      Boolean   @default(false)
+  whatsappConsentAt  DateTime?
+  bookingAlerts      Boolean   @default(true)
+  paymentAlerts      Boolean   @default(true)
+  expiryReminders    Boolean   @default(true)
+  announcements      Boolean   @default(true)
+  updatedAt          DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model Notification {
+  id                String              @id @default(uuid())
+  userId            String?
+  channel           NotificationChannel @default(WHATSAPP)
+  templateName      String
+  eventType         String
+  dedupeKey         String?             @unique
+  recipientPhone    String?
+  payload           Json
+  status            NotificationStatus  @default(QUEUED)
+  providerMessageId String?
+  errorMessage      String?
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  createdAt         DateTime            @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([status, eventType])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  actorEmail String?
+  actorRole  UserRole?
+  action     String
+  entityType String
+  entityId   String?
+  ipAddress  String?
+  userAgent  String?
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model Inquiry {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String
+  email     String?
+  examPrep  String?
+  message   String?
+  status    String   @default("NEW")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("inquiries")
+}
