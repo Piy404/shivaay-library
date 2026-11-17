@@ -1,4 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app-check.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -11,6 +12,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider('6LfPsCQuAAAAALmcX7NdMy175uQHKHB1QamwYioH'),
+  isTokenAutoRefreshEnabled: true
+});
+
 const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', () => {
