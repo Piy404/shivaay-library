@@ -104,11 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Check if logged in via Firebase Auth
    
-        const ADMIN_UID = "DIOlWYMnLpQAEVtVsIlEpYh2oUk1";
+    const ADMIN_EMAIL = "kamitpatel99@gmail.com";
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user && user.uid === ADMIN_UID) {
-            showDashboard();
+onAuthStateChanged(auth, async (user) => {
+  if (user && user.email === ADMIN_EMAIL) {
+    showDashboard();
         } else {
             if (user) {
                 console.warn(`Unauthorized login attempt by: ${user.email}`);
