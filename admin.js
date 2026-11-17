@@ -96,12 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. Check if logged in via Firebase Auth
+   
+        const ADMIN_UID = "DIOlWYMnLpQAEVtVsIlEpYh2oUk1";
+
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const allowedAdmins = ['admin@shivaay.com', 'admin@shivaaylibrary.com'];
-            if (allowedAdmins.includes(user.email)) {
-                showDashboard();
-            } else {
+        if (user && user.uid === ADMIN_UID) {
+            showDashboard();
+        } else {
+            if (user) {
                 console.warn(`Unauthorized login attempt by: ${user.email}`);
                 const errorMsg = document.getElementById('login-error');
                 if (errorMsg) {
@@ -113,15 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (err) {
                     console.error("Sign out error:", err);
                 }
-                document.getElementById('login-overlay').style.display = 'flex';
-                document.getElementById('admin-dashboard').style.display = 'none';
             }
-        } else {
             document.getElementById('login-overlay').style.display = 'flex';
             document.getElementById('admin-dashboard').style.display = 'none';
         }
     });
-
     // Password Toggle
     const togglePasswordBtn = document.getElementById('toggle-password');
     const passcodeField = document.getElementById('admin-passcode');
