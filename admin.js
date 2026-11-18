@@ -1,4 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app-check.js";
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
@@ -12,6 +13,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider('6Lc7eSYuAAAAAOgWKFIzKUCND2K2CLl2lLRCIo1B'),
+  isTokenAutoRefreshEnabled: true
+});
+
 const db = getFirestore(app);
 const auth = getAuth(app);
 
@@ -96,12 +103,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. Check if logged in via Firebase Auth
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const allowedAdmins = ['admin@shivaay.com', 'admin@shivaaylibrary.com'];
-            if (allowedAdmins.includes(user.email)) {
-                showDashboard();
-            } else {
+   
+    const ADMIN_EMAIL = "kamitpatel99@gmail.com";
+
+onAuthStateChanged(auth, async (user) => {
+  if (user && user.email === ADMIN_EMAIL) {
+    showDashboard();
+        } else {
+            if (user) {
                 console.warn(`Unauthorized login attempt by: ${user.email}`);
                 const errorMsg = document.getElementById('login-error');
                 if (errorMsg) {
@@ -113,15 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (err) {
                     console.error("Sign out error:", err);
                 }
-                document.getElementById('login-overlay').style.display = 'flex';
-                document.getElementById('admin-dashboard').style.display = 'none';
             }
-        } else {
             document.getElementById('login-overlay').style.display = 'flex';
             document.getElementById('admin-dashboard').style.display = 'none';
         }
     });
-
     // Password Toggle
     const togglePasswordBtn = document.getElementById('toggle-password');
     const passcodeField = document.getElementById('admin-passcode');
